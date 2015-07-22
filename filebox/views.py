@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.views.generic import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, FormView
@@ -6,6 +8,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.core.servers.basehttp import FileWrapper
+from django.contrib import messages
 
 from filebox.models import FileMetaData
 from filebox.forms import FileUploadForm
@@ -30,7 +33,17 @@ class FileUploadView(LoginRequiredMixin, FormView):
         return FileUploadForm(self.request.user, **self.get_form_kwargs())
 
     def form_valid(self, form):
-        form.save()
+        saved = form.save()
+        if saved.content.refcount > 1:
+            usernames = set(saved.content.filemetadata_set.exclude(pk=saved.pk)\
+                            .values_list('user__username', flat=True))
+            other = usernames - set([self.request.user.username])
+            if other:
+                alert = u'Этот файл уже есть у пользователя {0}'.format(u', '.join(other))
+                messages.info(self.request, alert)
+            if self.request.user.username in usernames:
+                messages.info(self.request, u'Этот файл уже есть в вашем хранилище')
+
         return super(FileUploadView, self).form_valid(form)
 
 

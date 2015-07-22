@@ -48,6 +48,12 @@
         </nav>
 
         <div class="container">
+            {% for msg in messages %}
+                <div class="alert alert-{{ msg.level_tag }}">
+                    {{ msg }}
+                </div>
+            {% endfor %}
+
             {% block content %}
             {% endblock %}
         </div>
