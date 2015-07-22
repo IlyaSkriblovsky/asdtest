@@ -61,7 +61,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            'templates',
+            os.path.join(BASE_DIR, 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -123,7 +123,7 @@ DEFAULT_FROM_EMAIL = 'info@filebox'
 
 LOGIN_REDIRECT_URL = reverse_lazy('filebox:list')
 
-MEDIA_ROOT = 'upload'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'upload')
 
 
 FILEBOX_MAX_FILES_PER_USER = 100
