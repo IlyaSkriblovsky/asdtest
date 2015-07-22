@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Регистрация</h1>
+
+    <div class="row">
+        <form method="post" class="col-sm-4">
+            {% csrf_token %}
+
+            {% include 'filebox/form_non_field_errors.html' %}
+
+            {% include 'filebox/field_text.html' with field=form.username %}
+            {% include 'filebox/field_text.html' with field=form.email %}
+            {% include 'filebox/field_password.html' with field=form.password1 %}
+            {% include 'filebox/field_password.html' with field=form.password2 %}
+
+            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+        </form>
+    </div>
+{% endblock %}

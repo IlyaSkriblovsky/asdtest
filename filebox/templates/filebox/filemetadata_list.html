@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Ваши файлы</h1>
+
+    <p style="margin-bottom: 2em">
+        <a href="{% url 'filebox:upload' %}" class="btn btn-success">Загрузить</a>
+    </p>
+
+    <h4>У вас {{ object_list|length }} файлов</h4>
+    <div class="col-sm-8">
+        <table class="table col-sm-8">
+            <tr>
+                <th>Имя</th>
+                <th>Загружен</th>
+                <th>Удалить</th>
+            </tr>
+        {% for filemeta in object_list %}
+            <tr>
+                <td>
+                    <a href="{% url 'filebox:download' pk=filemeta.pk filename=filemeta.filename %}">{{ filemeta.filename }}</a>
+                </td>
+                <td>{{ filemeta.uploaded_at }}</td>
+                <td>
+                    <form class="form-inline" method="post" action="{% url 'filebox:delete' pk=filemeta.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">удалить</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </table class="table">
+    </div>
+{% endblock %}

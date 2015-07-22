@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Загрузить файл</h1>
+
+    <div class="row">
+    <form method="post" enctype="multipart/form-data" class="col-sm-4">
+        {% csrf_token %}
+
+        {% include 'filebox/form_non_field_errors.html' %}
+
+        {% include 'filebox/field_file.html' with field=form.content %}
+
+        <button type="submit" class="btn btn-primary">Загрузить</button>
+    </form>
+    </div>
+{% endblock %}
