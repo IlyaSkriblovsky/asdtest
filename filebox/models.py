@@ -1,9 +1,12 @@
 import hashlib
+import logging
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import post_delete
+from django.db.models.signals import pre_delete, post_delete, post_save
 from django.dispatch import receiver
+
+logger = logging.getLogger('filebox.models')
 
 
 def _sha1_of_file(file):
@@ -56,13 +59,19 @@ class FileContent(models.Model):
             self.save(update_fields=['refcount'])
 
     def decref(self, nrefs=1, commit=True):
+        """
+        Returns True if filecontent was deleted since it's not referenced anymore
+        Returns False if filecontent has more references to it
+        """
         self.refcount -= nrefs
         if self.refcount > 0:
             if commit:
                 self.save(update_fields=['refcount'])
+            return False
         else:
             self.content.delete()
             self.delete()
+            return True
 
     def save(self, *args, **kwargs):
         if not self.sha1:
@@ -90,10 +99,27 @@ class FileMetaData(models.Model):
     content = models.ForeignKey(FileContent)
 
     def __unicode__(self):
-        return u'{0} (user: {1})'.format(self.filename, self.user)
+        return u'"{0}" (user: {1})'.format(self.filename, self.user)
 
 
 
-@receiver(post_delete, sender=FileMetaData, dispatch_uid='unref_filecontent')
-def unref_filecontent(sender, instance, using, **kwargs):
-    instance.content.decref()
+@receiver(post_save, sender=FileMetaData, dispatch_uid='on_filemetadata_create')
+def on_filemetadata_create(sender, instance, created, **kwargs):
+    if created:
+        if instance.content.refcount > 1:
+            log_msg = 'User "%(user)s" uploaded file "%(filename)s", referencing already existing filecontent %(filecontent)s'
+        else:
+            log_msg = 'User "%(user)s" uploaded file "%(filename)s", adding new filecontent %(filecontent)s'
+        logger.info(log_msg, {'user': instance.user, 'filename': instance.filename, 'filecontent': instance.content })
+
+@receiver(post_delete, sender=FileMetaData, dispatch_uid='on_filemetadata_delete')
+def on_filemetadata_delete(sender, instance, **kwargs):
+    filecontent_str = unicode(instance.content)
+
+    content_deleted = instance.content.decref()
+
+    if content_deleted:
+        log_msg = 'User "%(user)s" deleted file "%(filename)s", deleting filecontent %(filecontent)s'
+    else:
+        log_msg = 'User "%(user)s" deleted file "%(filename)s", keeping filecontent %(filecontent)s'
+    logger.info(log_msg, { 'user': instance.user, 'filename': instance.filename, 'filecontent': filecontent_str })

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from django.views.generic import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, FormView
@@ -12,6 +14,9 @@ from django.contrib import messages
 
 from filebox.models import FileMetaData
 from filebox.forms import FileUploadForm
+
+
+logger = logging.getLogger('filebox.views')
 
 
 class LoginRequiredMixin(object):
@@ -59,6 +64,8 @@ class FileDownloadView(SingleObjectMixin, View):
 
     def get(self, request, pk, filename):
         filemetadata = self.get_object()
+
+        logger.info('Downloading file %(md)s, %(fc)s', { 'md': filemetadata, 'fc': filemetadata.content })
 
         response = HttpResponse(FileWrapper(filemetadata.content.content), content_type='application/octet-stream')
         response['Content-Disposition'] = u'attachment; filename="{0}"'.format(filemetadata.filename)

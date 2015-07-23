@@ -39,7 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'filebox',
+    'filebox.apps.FileboxAppConfig',
 
     'registration',
 )
@@ -127,3 +127,31 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'upload')
 
 
 FILEBOX_MAX_FILES_PER_USER = 100
+
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s  %(asctime)s  %(name)s\t%(message)s'
+        }
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/asdtest.log'),
+            'formatter': 'verbose',
+        }
+    },
+    'loggers': {
+        'filebox': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+        },
+        'accounts': {
+            'handlers': [ 'file' ],
+            'level': 'DEBUG',
+        }
+    }
+}
