@@ -17,7 +17,7 @@ class FileUploadForm(Form):
 
     def clean(self):
         n_files = FileMetaData.objects.filter(user=self.user).count()
-        if n_files > settings.FILEBOX_MAX_FILES_PER_USER:
+        if n_files >= settings.FILEBOX_MAX_FILES_PER_USER:
             raise ValidationError(
                 u'Вы не можете загрузить более %(maxfiles)s файлов',
                 params={'maxfiles': settings.FILEBOX_MAX_FILES_PER_USER}
