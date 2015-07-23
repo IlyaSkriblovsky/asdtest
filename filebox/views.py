@@ -58,6 +58,10 @@ class FileDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         return FileMetaData.objects.filter(user=self.request.user)
 
+    def delete(self, *args, **kwargs):
+        messages.success(self.request, u'Файл "{0}" удалён из вашего хранилища'.format(self.get_object().filename))
+        return super(FileDeleteView, self).delete(*args, **kwargs)
+
 
 class FileDownloadView(SingleObjectMixin, View):
     model = FileMetaData
